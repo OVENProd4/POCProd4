@@ -1,0 +1,15 @@
+syntax = "proto3";
+package chat;
+option go_package = "/;chat";
+
+message Message {
+    string  body = 1;
+    // int32   status = 2;
+}
+
+service ChatService {
+    rpc SayHello(Message) returns (Message) {}
+    rpc EnterUserName(Message) returns (Message) {}
+    rpc EnterPassword(Message) returns (Message) {}
+    // rpc readXML(Message) returns (Message) {}
+}

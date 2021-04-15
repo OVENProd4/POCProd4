@@ -1,0 +1,121 @@
+package main
+
+import (
+	"log"
+
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+
+	"github.com/tutorialedge/go-grpc-tutorial/chat"
+
+	"encoding/xml"
+	"fmt"
+	"io/ioutil"
+	"os"
+)
+
+type Users struct {
+	XMLName xml.Name `xml:"users"`
+	Users   []User   `xml:"user"`
+}
+
+type User struct {
+	XMLName  xml.Name `xml:"user"`
+	Type     string   `xml:"type,attr"`
+	Name     string   `xml:"name"`
+	Password string   `xml:"password"`
+}
+
+var users Users
+
+func readXML() {
+	xmlFile, err := os.Open("users.xml")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("Successfully Opened users.xml")
+	defer xmlFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(xmlFile)
+
+	xml.Unmarshal(byteValue, &users)
+
+	for i := 0; i < len(users.Users); i++ {
+		fmt.Println("User Type: " + users.Users[i].Type)
+		fmt.Println("User Name: " + users.Users[i].Name)
+		fmt.Println("Password: " + users.Users[i].Password)
+	}
+}
+
+var username string
+var password string
+
+func main() {
+	var conn *grpc.ClientConn
+	conn, err := grpc.Dial(":9000", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect: %s", err)
+	}
+	defer conn.Close()
+
+	//////
+
+	c := chat.NewChatServiceClient(conn)
+
+	readXML()
+
+	//////
+
+	message := chat.Message{
+		Body:   "Hello from the client!",
+		Status: true,
+	}
+
+	response, err := c.SayHello(context.Background(), &message)
+	if err != nil {
+		// log.Fatalf("Error when calling SayHello: %s", err)
+		fmt.Printf("Error when calling SayHello: %s", err)
+	}
+
+	log.Printf("Response from Server: %s", response.Body)
+
+	/////
+enterUsername:
+	fmt.Scanln(&username)
+	message1 := chat.Message{
+		Body:   username,
+		Status: true,
+	}
+
+	response1, err1 := c.EnterUserName(context.Background(), &message1)
+	if err1 != nil {
+		log.Fatalf("Error when calling EnterUserName: %s", err1)
+	}
+
+	if !response1.Status {
+		goto enterUsername
+	}
+
+	fmt.Printf("---> %s", response1.Body)
+
+	//////
+enterPassword:
+	fmt.Scanln(&password)
+	message2 := chat.Message{
+		Body:   password,
+		Status: true,
+	}
+
+	response2, err2 := c.EnterPassword(context.Background(), &message2)
+	if err2 != nil {
+		log.Fatalf("Error when calling EnterPassword: %s", err2)
+	}
+
+	if !response2.Status {
+		goto enterPassword
+	}
+
+	fmt.Printf("---> %s", response2.Body)
+
+}
