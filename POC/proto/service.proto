@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package proto;
+option go_package="./proto";
+
+message Request {
+    string username = 1;
+    string password = 2;
+}
+
+message Response {
+    string result = 1;
+}
+
+service AuthenticateService {
+    rpc ValidateUser(Request) returns (Response);
+}
