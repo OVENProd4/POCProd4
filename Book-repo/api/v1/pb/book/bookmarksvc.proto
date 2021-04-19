@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package Bookmark;
+
+
+
+service Bookmark {
+    rpc Get (GetRequest) returns (GetReply) {}
+
+    rpc Bookmark (BookmarkRequest) returns (BookmarkReply) {}
+
+    rpc Status (StatusRequest) returns (StatusReply) {}
+
+    rpc AddDocument (AddDocumentRequest) returns (AddDocumentReply) {}
+
+    rpc ServiceStatus (ServiceStatusRequest) returns (ServiceStatusReply) {}
+}
+
+message Document {
+    string content = 1;
+    string title = 2;
+    string author = 3;
+    string topic = 4;
+    int64 Bookmark = 5;
+}
+
+message GetRequest {
+    message Filters {
+        string key = 1;
+        string value = 2;
+    }
+    repeated Filters filters = 1;
+}
+
+message GetReply {
+    repeated Document documents = 1;
+    string Err = 2;
+}
+
+message StatusRequest {
+    string ticketID = 1;
+}
+
+message StatusReply {
+    enum Status {
+        PENDING = 0;
+        STARTED = 1;
+        IN_PROGRESS = 2;
+        FINISHED = 3;
+        FAILED = 4;
+    }
+    Status status = 1;
+    string Err = 2;
+}
+
+message BookmarkRequest {
+    string ticketID = 1;
+    int64 pagenumber = 2;
+}
+
+message BookmarkReply {
+    int64 code = 1;
+    string err = 2;
+}
+
+message AddDocumentRequest {
+    Document document = 1;
+}
+
+message AddDocumentReply {
+    string ticketID = 1;
+    string err = 2;
+}
+
+message ServiceStatusRequest {
+    bool Found = 1;
+}
+
+message ServiceStatusReply {
+    int64 code = 1;
+    string err = 2;
+}
