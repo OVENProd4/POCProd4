@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+
+option go_package = "Orders/proto";
+package Orders;
+
+//import "google.golang.org/protobuf/timestamp.proto";
+
+// Order service with CRUD + List rpc method definitions
+service OrderService {
+  
+  // creates a new order
+  rpc Create (CreateOrderRequest) returns (CreateOrderResponse);
+  
+  // retrieves an existing order
+  rpc Retrieve (RetrieveOrderRequest) returns (RetrieveOrderResponse);
+  
+  // modifies an existing order
+  rpc Update (UpdateOrderRequest) returns (UpdateOrderResponse);
+  
+  // cancels an existing order
+  rpc Delete (DeleteOrderRequest) returns (DeleteOrderResponse);
+  
+   // lists existing orders
+  rpc List (ListOrderRequest) returns (ListOrderResponse);
+}
+
+// message containing order details (this is our entity)
+message Order {
+  // Represents the different states an order can be in
+  enum Status {
+    PENDING = 0;
+    PAID = 1;
+    SHIPPED = 2;
+    DELIVERED = 3;
+    CANCELLED = 4;
+  }
+  int64 order_id = 1;
+  repeated Item items = 2;
+  float total = 3;
+  //google.protobuf.Timestamp order_date = 5;
+  Status status = 6;
+}
+
+// message containing payment info
+message PaymentMethod {
+    enum Type {
+    NOT_DEFINED = 0;
+    VISA = 1;
+    MASTERCARD = 2;
+    PAYPAL = 3;
+    APPLEPAY = 4;
+  }
+   Type payment_type = 1;
+   string pre_authorization_token = 2; 
+}
+
+// message containing the details of an item that can be included in an order
+message Item {
+  string description = 1;
+  float price = 2;
+}
+
+// The request for creating an order
+message CreateOrderRequest {
+  repeated Item items = 1;
+  PaymentMethod payment_method = 2;
+}
+
+// The response of order creation
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+// The request for retrieving an order
+message RetrieveOrderRequest {
+  int64 order_id = 1;
+}
+
+// The response from retrieving an order
+message RetrieveOrderResponse {
+  Order order = 1;
+}
+
+// The request for modifying an existing order
+message UpdateOrderRequest {
+  int64 order_id = 1;
+  repeated Item items = 2;
+  PaymentMethod payment_method = 3;
+}
+
+// The response from updating an existing order
+message UpdateOrderResponse {
+  Order order = 1;
+}
+
+// The request for cancelling an existing order
+message DeleteOrderRequest {
+  int64 order_id = 1;
+}
+
+// The response from cancelling an existing order
+message DeleteOrderResponse {
+  Order order = 1;
+}
+
+// The request for listing existing orders
+message ListOrderRequest {
+  repeated int64 ids = 1;
+  Order.Status statuses = 2;
+}
+
+// The list order response
+message ListOrderResponse {
+  repeated Order orders = 1;
+}
